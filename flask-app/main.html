@@ -1,0 +1,89 @@
+<form id="dynamicForm">
+    <div class="form-row">
+      <input type="text" name="field_1" placeholder="Field 1" />
+      <select name="field_2" class="field_2">
+        <option value="">Select an option</option>
+        <option value="test1">test1</option>
+        <option value="test2">test2</option>
+      </select>
+      <select name="field_3" class="field_3">
+        <option value="">Select employee</option>
+        <!-- Options will be dynamically loaded based on field_2 selection -->
+      </select>
+    </div>
+    <button type="button" id="addRow">Add Row</button>
+    <button type="button" id="saveState">Save</button>
+  </form>
+  
+  <script>
+    const dependencies = {
+      "test1": ["employee1", "employee2"],
+      "test2": ["employee3", "employee4"],
+    };
+  
+    // Function to update dependent dropdown (field_3)
+    function updateDropdown(selectElement) {
+      const row = selectElement.closest('.form-row');
+      const field3 = row.querySelector('.field_3');
+      const selectedValue = selectElement.value.trim();
+  
+      // Clear previous options
+      field3.innerHTML = '<option value="">Select employee</option>';
+  
+      // Add new options based on the selection in field_2
+      if (selectedValue && dependencies[selectedValue]) {
+        dependencies[selectedValue].forEach(option => {
+          const opt = document.createElement('option');
+          opt.value = option.trim();
+          opt.textContent = option.trim();
+          field3.appendChild(opt);
+        });
+      }
+    }
+  
+    // Add event listener for new row addition
+    document.getElementById('addRow').addEventListener('click', function () {
+      const newRow = document.createElement('div');
+      newRow.classList.add('form-row');
+      newRow.innerHTML = `
+        <input type="text" name="field_1" placeholder="Field 1" />
+        <select name="field_2" class="field_2">
+          <option value="">Select an option</option>
+          <option value="test1">test1</option>
+          <option value="test2">test2</option>
+        </select>
+        <select name="field_3" class="field_3">
+          <option value="">Select employee</option>
+        </select>`;
+      document.getElementById('dynamicForm').insertBefore(newRow, document.getElementById('addRow'));
+  
+      // Attach event listener to the new "field_2" dropdown
+      newRow.querySelector('.field_2').addEventListener('change', function () {
+        updateDropdown(this);
+      });
+    });
+  
+    // Initialize event listeners for the first row
+    document.querySelectorAll('.field_2').forEach(select => {
+      select.addEventListener('change', function () {
+        updateDropdown(this);
+      });
+    });
+  
+    // Save form state as JSON and log to the console
+    document.getElementById('saveState').addEventListener('click', function () {
+      const formDta = new FormData(document.getElementById('dynamicForm'));
+      const formJSON = {};
+  
+      formData.forEach((value, key) => {
+        if (!formJSON[key]) {
+          formJSON[key] = [];
+        }
+        formJSON[key].push(value);
+      });
+  
+      // Log the form data as JSON to the console
+      console.log('Form data:', JSON.stringify(formJSON, null, 2));
+    });
+  </script>
+  
